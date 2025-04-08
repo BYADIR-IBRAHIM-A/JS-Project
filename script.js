@@ -1,11 +1,31 @@
 // استهداف العناصر الأساسية
 const addTaskBtn = document.getElementById('addTaskBtn');
-addTaskBtn.className = 'btn btn-primary rounded-end-circle'; // إضافة الكلاسات المطلوبة
-addTaskBtn.innerHTML = '<img class="rounded-end-circle" alt="إضافة مهمة">'; // إضافة الصورة داخل الزر
-
 const taskList = document.getElementById('taskList');
+const liveAlertPlaceholder = document.getElementById('liveAlertPlaceholder');
 
-document.body.style.backgroundColor = "rgb(149,200,216)"; // لون الخلفية (يمكن تغييره)
+// مصفوفة الألوان
+const colors = ['#F8C9C1', '#E6C478', '#C3E0C3', '#B0D1E0', '#E6A98A', '#C5A0C5', '#D8A3A3', '#BEE0B8'];
+
+// متغير لتعداد البطاقات
+let taskCounter =1;
+
+// دالة لإظهار التنبيه
+function showAlert(message, type, icon) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-sm d-flex align-items-center alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        <svg class="bi flex-shrink-0 me-2" role="img" aria-label="${type}"><use xlink:href="#${icon}"/></svg>
+        <div>${message}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    liveAlertPlaceholder.appendChild(alertDiv);
+
+    // إزالة التنبيه بعد 3 ثوانٍ
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 1000);
+}
 
 // عند النقر على زر "إضافة مهمة"
 addTaskBtn.addEventListener('click', () => {
@@ -14,31 +34,85 @@ addTaskBtn.addEventListener('click', () => {
         alert('يرجى إدخال اسم المهمة!');
         return;
     }
-    
-    // إنشاء عناصر المهمة
-    const listItem = document.createElement('li');
-    listItem.className = 'list-group-item d-flex justify-content-between align-items-center shadow p-3 mb-5 bg-body-tertiary rounded';
-    listItem.textContent = taskName;
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger btn-sm';
-deleteBtn.innerHTML = `
-<a class="icon-link" href="#">
-  <svg xmlns="http://www.w3.org/2000/svg" class="bi" viewBox="0 0 16 16" aria-hidden="true">  
-    <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
-  </svg>
-  Icon link
-</a>`; // إضافة الأيقونة بدلاً من النص
-    deleteBtn.style.marginLeft = '10px'; // إضافة مسافة بين الزر والنص
-    deleteBtn.style.backgroundColor = 'transparent'; // جعل خلفية الزر شفافة
+    // تخزين قيمة taskCounter الحالية
+    const currentTaskNumber = taskCounter;
 
-    deleteBtn.addEventListener('click', () => {
-        const confirmDelete = confirm('هل تريد حذف هذه المهمة؟');
+    // اختيار لون عشوائي من المصفوفة
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    // إنشاء عمود للبطاقة
+    const col = document.createElement('div');
+    col.className = 'col'; // استخدام الكلاس "col" لتنسيق البطاقات
+
+    // إنشاء البطاقة الرئيسية
+    const card = document.createElement('div');
+    card.className = 'card h-100';
+    card.style.backgroundColor = randomColor; // تعيين لون الخلفية
+
+    // جسم البطاقة
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+
+    // عنوان البطاقة
+    const cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title';
+    cardTitle.textContent = `المهمة ${currentTaskNumber}`; // استخدام currentTaskNumber كعنوان
+
+    // نص البطاقة
+    const cardText = document.createElement('p');
+    cardText.className = 'card-text';
+    cardText.textContent = taskName;
+
+    // تذييل البطاقة
+    const cardFooter = document.createElement('div');
+    cardFooter.className = 'card-footer d-flex justify-content-between align-items-center';
+
+    // نص التذييل
+    const footerText = document.createElement('small');
+    footerText.className = 'text-body-secondary';
+    footerText.textContent = 'تم التحديث الآن';
+
+    // أيقونة "إكمال المهمة"
+    const completeIcon = document.createElement('i');
+    completeIcon.className = 'bi bi-check-circle text-success'; // أيقونة الإكمال
+    completeIcon.style.cursor = 'pointer';
+    completeIcon.addEventListener('click', () => {
+        cardTitle.style.textDecoration = 'line-through'; // إضافة خط يتوسط النص
+        cardTitle.style.color = 'gray'; // تغيير لون النص
+        showAlert(`تم إكمال المهمة "${currentTaskNumber}" بنجاح!`, 'success', 'check-circle-fill'); // عرض تنبيه الإكمال
+    });
+
+    // أيقونة "حذف المهمة"
+    const deleteIcon = document.createElement('i');
+    deleteIcon.className = 'bi bi-trash text-danger'; // أيقونة الحذف
+    deleteIcon.style.cursor = 'pointer';
+    deleteIcon.addEventListener('click', () => {
+        const confirmDelete = confirm(`هل تريد حذف المهمة "${currentTaskNumber}"؟`);
         if (confirmDelete) {
-            taskList.removeChild(listItem);
+            taskList.removeChild(col);
+            showAlert(`تم حذف المهمة "${currentTaskNumber}" بنجاح!`, 'danger', 'exclamation-triangle-fill'); // عرض تنبيه الحذف
         }
     });
 
-    listItem.appendChild(deleteBtn);
-    taskList.appendChild(listItem);
+    // تجميع عناصر التذييل
+    const footerIcons = document.createElement('div');
+    footerIcons.appendChild(completeIcon);
+    footerIcons.appendChild(deleteIcon);
+
+    cardFooter.appendChild(footerText);
+    cardFooter.appendChild(footerIcons);
+
+    // تجميع عناصر البطاقة
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(cardText);
+    card.appendChild(cardBody);
+    card.appendChild(cardFooter);
+    col.appendChild(card);
+
+    // إضافة العمود إلى القائمة
+    taskList.appendChild(col);
+
+    // زيادة العداد
+    taskCounter++;
 });
